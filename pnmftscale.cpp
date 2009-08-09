@@ -17,10 +17,10 @@ public:
   Ar(char*filename){
     FILE*f=fopen(filename,"r");
     fscanf(f,"P5\n%d %d\n255\n",&w,&h);
-    if(w<10 || h<10)
-      throw(TooSmall());
-    if(w>800 || h>600)
-      throw(TooBig());
+    //if(w<10 || h<10)
+    //  throw(TooSmall());
+    //    if(w>800 || h>600)
+    //  throw(TooBig());
     unsigned char buf[w*h];
     fread(buf,w,h,f);
     data=new c[w*h];
@@ -34,26 +34,31 @@ public:
   }
   // copy fouriertransform with correct zero padding
   Ar(Ar&a,int w,int h):w(w),h(h){
-    if(a.w>w || a.h>h)
-      throw NotInAr();
+    //   if(a.w>w || a.h>h)
+    //  throw NotInAr();
+    int 
+      W=min(a.w,w),
+      H=min(a.h,h),
+      DX=max(0,a.w-w),
+      DY=max(0,a.h-h);
     data=new c[w*h];
     int i,j,dx=1,dy=1;
     // upper left
-    for(j=0;j<a.h/2+dy;j++)
-      for(i=0;i<a.w/2+dx;i++)
+    for(j=0;j<H/2+dy;j++)
+      for(i=0;i<W/2+dx;i++)
 	(*this)(i,j)=a(i,j);
     // upper right
-    for(j=0;j<a.h/2+dy;j++)
-      for(i=a.w/2+dx;i<a.w;i++)
-	(*this)(i-a.w+w,j)=a(i,j);
+    for(j=0;j<H/2+dy;j++)
+      for(i=W/2+dx;i<W;i++)
+	(*this)(i-W+w,j)=a(i+DX,j);
     // lower left
-    for(j=a.h/2+dy;j<a.h;j++)
-      for(i=0;i<a.w/2+dx;i++)
-	(*this)(i,j-a.h+h)=a(i,j);
+    for(j=H/2+dy;j<H;j++)
+      for(i=0;i<W/2+dx;i++)
+	(*this)(i,j-H+h)=a(i,j+DY);
     // lower right
-    for(j=a.h/2+dy;j<a.h;j++)
-      for(i=a.w/2+dx;i<a.w;i++)
-	(*this)(i-a.w+w,j-a.h+h)=a(i,j);
+    for(j=H/2+dy;j<H;j++)
+      for(i=W/2+dx;i<W;i++)
+	(*this)(i-W+w,j-H+h)=a(i+DX,j+DY);
   }
   ~Ar(){
     //    delete [] data;
@@ -108,7 +113,7 @@ main(int argc,char**argv)
     return 0;
   }
   Ar in(argv[1]);
-  int w=800, h=480,nw,nh;
+  int w=795, h=455,nw,nh;
   double 
     qw=w*1./in.w,
     qh=h*1./in.h;
@@ -128,7 +133,7 @@ main(int argc,char**argv)
   FT f2(kbig,out,FFTW_BACKWARD);
   f2();
   for(int i=0;i<nw*nh;i++)
-    out[i]=round(real(out[i])*.78/(in.w*in.h)+42);
+    out[i]=round(real(out[i])*.75/(in.w*in.h)+42);
   out.output(argv[2]);
   return 0;
 }
