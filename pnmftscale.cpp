@@ -37,12 +37,7 @@ public:
     if(a.w>w || a.h>h)
       throw NotInAr();
     data=new c[w*h];
-    int i,j,dx=0,dy=0;
-    if(a.w%2)
-      dx=1;
-    if(a.h%2)
-      dy=1;
-    cout << "dx=" << dx << " dy=" << dy << endl;
+    int i,j,dx=1,dy=1;
     // upper left
     for(j=0;j<a.h/2+dy;j++)
       for(i=0;i<a.w/2+dx;i++)
@@ -50,16 +45,16 @@ public:
     // upper right
     for(j=0;j<a.h/2+dy;j++)
       for(i=a.w/2+dx;i<a.w;i++)
-	(*this)(i-a.w+w-1+dx,j)=a(i,j);
+	(*this)(i-a.w+w,j)=a(i,j);
     // lower left
     for(j=a.h/2+dy;j<a.h;j++)
       for(i=0;i<a.w/2+dx;i++)
-	(*this)(i,j-a.h+h+dy)=a(i,j);
+	(*this)(i,j-a.h+h)=a(i,j);
     // lower right
     for(j=a.h/2+dy;j<a.h;j++)
       for(i=a.w/2+dx;i<a.w;i++)
-	(*this)(i-a.w+w-1+dx,j-a.h+h+dy)=a(i,j);
-      }
+	(*this)(i-a.w+w,j-a.h+h)=a(i,j);
+  }
   ~Ar(){
     //    delete [] data;
   }
@@ -124,33 +119,17 @@ main(int argc,char**argv)
     nw=int(qh*in.w+.5);
     nh=int(qh*in.h+.5);
   }
-  cout << nw << " " << nh << endl;
-  //  in.transpose();
-  //  in.output("in.pgm");
   Ar kin(in.w,in.h);
   FT f(in,kin);
   
   f(); 
   Ar kbig(kin,nw,nh);
-  Ar kinout(nw,nh);
-  for(int i=0;i<kinout.w*kinout.h;i++){
-    double v=abs(kbig[i])/1e3;
-    kinout[i]=v<1?255:(v<13?128:v);
-  }
-  kinout.output("kbig.pgm");
-
   Ar out(nw,nh);
   FT f2(kbig,out,FFTW_BACKWARD);
   f2();
-  double sumi=0,sumr=0;
-  for(int i=0;i<nw*nh;i++)
-    sumi+=abs(imag(out[i]));
-  for(int i=0;i<nw*nh;i++)
-    sumr+=abs(real(out[i]));
-  
-  cout << "imag rest=" << sumi << " relative to real=" << sumi/sumr << endl;
   for(int i=0;i<nw*nh;i++)
     out[i]=round(real(out[i])*.78/(in.w*in.h)+42);
-  out.output("out.pgm");
+  out.output(argv[2]);
   return 0;
 }
+
